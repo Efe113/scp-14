@@ -1,0 +1,96 @@
+{
+  "users": {
+    "640056735700221953": {
+      "playlists": {
+        "deneme": {
+          "desc": "",
+          "pub": 0,
+          "created": 1765556875093,
+          "songs": []
+        },
+        "Beyong The Starts": {
+          "desc": "",
+          "pub": 0,
+          "created": 1765557543779,
+          "songs": [
+            {
+              "t": "Sami Yusuf - Nasimi #worldmusic #worldmusictraditions",
+              "u": "https://www.youtube.com/watch?v=iBd1r5VOK2c",
+              "d": "6:55",
+              "i": null
+            }
+          ]
+        }
+      }
+    },
+    "1222551004289958010": {
+      "playlists": {
+        "Favoriler": {
+          "desc": "Hızlı kaydedilenler",
+          "pub": 0,
+          "created": 1765986860732,
+          "songs": [
+            {
+              "t": "911 CARRERA X BILLIONAIRE",
+              "u": "https://www.youtube.com/watch?v=cNHu91RpdyI",
+              "d": "1:37",
+              "i": "https://i.imgur.com/AfFp7pu.png"
+            }
+          ]
+        }
+      }
+    },
+    "1341429609400373268": {
+      "playlists": {
+        "Favoriler": {
+          "desc": "Hızlı kaydedilenler",
+          "pub": 0,
+          "created": 1765987824620,
+          "songs": [
+            {
+              "t": "Ufuk Tan - Feyzullah (Official Video)",
+              "u": "https://www.youtube.com/watch?v=BuhPVJCKU90",
+              "d": "4:10",
+              "i": "https://i.imgur.com/AfFp7pu.png"
+            },
+            {
+              "t": "Feyzulah",
+              "u": "https://www.youtube.com/watch?v=gl8cs2Pf6MA",
+              "d": "1:37",
+              "i": "https://i.imgur.com/AfFp7pu.png"
+            }
+          ]
+        }
+      }
+    },
+    "1444031870445817856": {
+      "playlists": {
+        "Favoriler": {
+          "desc": "Hızlı kaydedilenler",
+          "pub": 0,
+          "created": 1765990028488,
+          "songs": [
+            {
+              "t": "Cakal & Arem Ozguc & Arman Aydin  - Diyardan Diyara ( Official Music Video )",
+              "u": "https://www.youtube.com/watch?v=lTVhSzDRrRg",
+              "d": "2:30",
+              "i": "https://i.imgur.com/AfFp7pu.png"
+            }
+          ]
+        }
+      }
+    }
+  },
+  "guilds": {
+    "1421793346057146430": {
+      "musicChannel": {
+        "channelId": "1450874793372029129",
+        "messageId": "1450874795498537212"
+      }
+    }
+  },
+  "stats": {
+    "totalPlayed": 0,
+    "bootTime": 1765554183442
+  }
+}

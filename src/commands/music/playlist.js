@@ -47,9 +47,9 @@ function renderPlaylistView(playlist, page) {
 
     // Navigasyon Butonları
     const navRow = new ActionRowBuilder().addComponents(
-        new ButtonBuilder().setCustomId(`pl_prev_${playlist.name}_${page}`).setEmoji('⬅️').setStyle(ButtonStyle.Secondary).setDisabled(page <= 1),
-        new ButtonBuilder().setCustomId(`pl_play_${playlist.name}`).setLabel('Bu Listeyi Çal').setEmoji('▶️').setStyle(ButtonStyle.Success),
-        new ButtonBuilder().setCustomId(`pl_next_${playlist.name}_${page}`).setEmoji('➡️').setStyle(ButtonStyle.Secondary).setDisabled(page >= totalPages)
+        new ButtonBuilder().setCustomId(`pl_prev_${playlist.ownerId}_${playlist.name}_${page}`).setEmoji('⬅️').setStyle(ButtonStyle.Secondary).setDisabled(page <= 1),
+        new ButtonBuilder().setCustomId(`pl_play_${playlist.ownerId}_${playlist.name}`).setLabel('Bu Listeyi Çal').setEmoji('▶️').setStyle(ButtonStyle.Success),
+        new ButtonBuilder().setCustomId(`pl_next_${playlist.ownerId}_${playlist.name}_${page}`).setEmoji('➡️').setStyle(ButtonStyle.Secondary).setDisabled(page >= totalPages)
     );
 
     return { embeds: [embed], components: [navRow] };
@@ -291,21 +291,76 @@ module.exports = {
                 const collector = msg.createMessageComponentCollector({ componentType: ComponentType.Button, time: 120000 });
 
                 collector.on('collect', async i => {
-                    const [action, plName, pageStr] = i.customId.split('_'); // pl_prev_Isim_1
-                    
+                    const [action, ownerId, plName, pageStr] = i.customId.split('_'); // pl_prev_ownerId_plName_1
+                    let page = parseInt(pageStr);
+
                     if (action === 'pl') {
                         // Play butonuna özel işlem
                         if (i.customId.includes('play')) {
-                            // Burada "yukle" mantığını tekrar çağırmak yerine, kullanıcıya komutu önerelim veya direkt işlem yapalım.
-                            // Basitlik için:
-                            return i.reply({ content: `▶️ Bu listeyi yüklemek için: \`/playlist yukle isim:${plName}\``, ephemeral: true });
+                            // Kullanıcının ses kanalında olup olmadığını kontrol et
+                            if (!i.member.voice.channel) {
+                                return i.reply({ content: '❌ Bu listeyi çalmak için bir ses kanalına katılmalısın.', ephemeral: true });
+                            }
+
+                            // Playlisti al (ownerId ve plName ile)
+                            const currentPl = db.getPlaylist(ownerId, plName);
+                            if (!currentPl) {
+                                return i.reply({ content: '❌ Playlist bulunamadı.', ephemeral: true });
+                            }
+
+                            // Playlist sahibi kontrolü: Eğer playlist özel ise (isPublic false) ve butona basan kişi sahip değilse, engelle.
+                            if (!currentPl.isPublic && currentPl.ownerId !== i.user.id) {
+                                return i.reply({ content: '❌ Bu playlist özel ve sadece sahibi tarafından çalınabilir.', ephemeral: true });
+                            }
+
+                            // Şarkıları formatla
+                            const songs = currentPl.songs.map(s => ({
+                                title: s.title,
+                                url: s.url,
+                                thumbnail: s.thumbnail,
+                                duration: s.duration,
+                                requester: i.user
+                            }));
+
+                            // Kuyruk mantığı (play.js ile benzer)
+                            const guildId = i.guild.id;
+                            let serverQueue = client.queue.get(guildId);
+
+                            if (!serverQueue) {
+                                const queueContruct = {
+                                    textChannel: i.channel,
+                                    voiceChannel: i.member.voice.channel,
+                                    connection: null, player: null, resource: null, songs: [], loop: 0, volume: 100, filter: null, playing: true
+                                };
+                                client.queue.set(guildId, queueContruct);
+                                queueContruct.songs.push(...songs);
+
+                                try {
+                                    await sodium.ready;
+                                    const connection = joinVoiceChannel({
+                                        channelId: i.member.voice.channel.id,
+                                        guildId: i.guild.id,
+                                        adapterCreator: i.guild.voiceAdapterCreator,
+                                        selfDeaf: false
+                                    });
+                                    queueContruct.connection = connection;
+                                    playSongInternal(i.guild, queueContruct.songs[0], client);
+                                    return i.reply({ content: `▶️ **${currentPl.name}** yüklendi ve başlatıldı (${songs.length} şarkı).`, ephemeral: true });
+                                } catch (e) {
+                                    client.queue.delete(guildId);
+                                    return i.reply({ content: `❌ Hata: ${e.message}`, ephemeral: true });
+                                }
+                            } else {
+                                serverQueue.songs.push(...songs);
+                                return i.reply({ content: `✅ **${currentPl.name}** mevcut kuyruğa eklendi (${songs.length} şarkı).`, ephemeral: true });
+                            }
                         }
 
-                        let page = parseInt(pageStr);
+                        // Sayfa değiştirme butonları
                         if (i.customId.includes('next')) page++;
                         if (i.customId.includes('prev')) page--;
 
-                        const currentPl = db.getPlaylist(userId, plName); // Güncel veriyi çek
+                        const currentPl = db.getPlaylist(ownerId, plName); // Güncel veriyi çek
                         const newData = renderPlaylistView(currentPl, page);
                         await i.update(newData);
                     }

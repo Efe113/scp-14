@@ -81,4 +81,43 @@ function checkDJ(interaction) {
     return false;
 }
 
-module.exports = { getVideoInfo, isPlaylist, checkDJ };
+// YouTube video istatistiklerini çek
+async function getYoutubeVideoStats(url) {
+    try {
+        const ytArgs = [
+            '--dump-json',
+            '--no-warnings',
+            '--skip-download',
+            '--geo-bypass',
+            url
+        ];
+        
+        return new Promise((resolve, reject) => {
+            const ytDlp = spawn('./yt-dlp.exe', ytArgs);
+            let data = '';
+            
+            ytDlp.stdout.on('data', chunk => data += chunk);
+            ytDlp.on('close', () => {
+                try {
+                    const info = JSON.parse(data);
+                    resolve({
+                        views: info.view_count || null,
+                        likes: info.like_count || null,
+                        uploader: info.uploader || null,
+                        published: info.upload_date ? 
+                            `${info.upload_date.slice(6,8)}/${info.upload_date.slice(4,6)}/${info.upload_date.slice(0,4)}` : null
+                    });
+                } catch (e) {
+                    reject(e);
+                }
+            });
+            
+            ytDlp.on('error', reject);
+        });
+    } catch (e) {
+        console.error('YouTube stats hatası:', e);
+        return null;
+    }
+}
+
+module.exports = { getVideoInfo, isPlaylist, checkDJ, getYoutubeVideoStats };

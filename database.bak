@@ -84,8 +84,8 @@
   "guilds": {
     "1421793346057146430": {
       "musicChannel": {
-        "channelId": "1450874793372029129",
-        "messageId": "1450874795498537212"
+        "channelId": null,
+        "messageId": null
       }
     }
   },
